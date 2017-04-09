@@ -16,6 +16,7 @@
 #
 import webapp2
 import cgi
+import re
 
 # html boilerplate for the top of every page
 page_header = """
@@ -45,7 +46,7 @@ page_footer = """
 form = """
 
 <form action="/success" method="post">
-    <label>Create a login name (3-10 characters, no spaces or symbols):
+    <label>Create a user name you would like to use with our site:
     <br />
     <input type="text" name="user_name" value="%(user_name)s">
     </label>
@@ -65,11 +66,11 @@ form = """
     <input type="password" name="password2" value="">
     </label>
     <br />
-    <div style="color:red">%(error)s</div>-->
     <input type="submit">
-
 </form>
 """
+
+
 
 #error_name = "User name should be 3-10 characters and have no spaces or symbols"
 #error_password = "User passwords should match"
@@ -83,24 +84,32 @@ class Index(webapp2.RequestHandler):
     """ Handles requests coming in to '/' (the root of our site)
     """
 
-#    def write_form(self, error=""):
-#        self.response.write(form % {"error": error})
-
-
     def get(self):
-#        user_name = self.request.get('user_name')
-#        user_email = self.request.get('user_email')
-#        user_password = self.request.get('user_password') if password == password2
+
+        error = self.request.get("error")
+        if error:
+            error_esc = cgi.escape(error, quote=True)
+            error_message = '<p class="error">' + error_esc + '</p>'
+        else:
+            error_message = ''
 
 
-        self.response.write(page_header + form + page_footer)
-
-    #def post(self):
-    #    self.response.write()
-
+        self.response.write(page_header + form + error_message + page_footer)
 
 class SuccessfulRegistration(webapp2.RequestHandler):
     def post(self):
+
+        user_name = self.request.get('user_name')
+        user_email = self.request.get('user_email')
+        user_password = self.request.get('user_password')
+
+        #if len(user_name) < 3 or len(user_name) > 10:
+            #self.redirect("/?error=Your login name must be 3-10 characters in length. Please choose another.)
+        # TODO 2
+        # if the user typed nothing at all, redirect and yell at them
+        if user_name == '' or user_email == '' or user_password == '':
+            self.redirect("/?error=One or more fields were left blank. Please complete the form before submission.")
+
         self.response.write(page_header + "Congratulation on a successful submission!" + page_footer)
 
 app = webapp2.WSGIApplication([
