@@ -31,7 +31,7 @@ page_header = """
 </head>
 <body>
     <h1>
-        <a href="/">Account login registration</a>
+        <a href="/">Account Registration</a>
     </h1>
 """
 
@@ -40,8 +40,6 @@ page_footer = """
 </body>
 </html>
 """
-
-
 
 #Sign-in page form data
 form = """
@@ -97,13 +95,12 @@ class Index(webapp2.RequestHandler):
 
         self.response.write(page_header + form + page_footer)
 
-#    def post(self):
-#        self.response.write()
+    #def post(self):
+    #    self.response.write()
 
-        #self.redirect(/success)
 
 class SuccessfulRegistration(webapp2.RequestHandler):
-    def get(self):
+    def post(self):
         self.response.write(page_header + "Congratulation on a successful submission!" + page_footer)
 
 app = webapp2.WSGIApplication([
