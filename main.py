@@ -15,61 +15,98 @@
 # limitations under the License.
 #
 import webapp2
+import cgi
+
+# html boilerplate for the top of every page
+page_header = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create an account</title>
+    <style type="text/css">
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>
+        <a href="/">Account login registration</a>
+    </h1>
+"""
+
+# html boilerplate for the bottom of every page
+page_footer = """
+</body>
+</html>
+"""
 
 
+
+#Sign-in page form data
 form = """
 
-<form method="post" action="/success">
-    <label>User name (3-10 characters, no spaces or symbols):
+<form action="/success" method="post">
+    <label>Create a login name (3-10 characters, no spaces or symbols):
+    <br />
     <input type="text" name="user_name" value="%(user_name)s">
     </label>
-
-    <label>User E-mail:
+    <br />
+    <label>Enter your e-mail address for verification:
+    <br />
     <input type="text" name="user_email" value="%(user_email)s">
     </label>
-
-    <label>Password (3-10 characters without spaces):
+    <br />
+    <label>Password (5-10 characters without spaces):
+    <br />
     <input type="password" name="user_password" value="">
     </label>
-
+    <br />
     <label>Re-type Password:
+    <br />
     <input type="password" name="password2" value="">
     </label>
-    <div style="color:red">%(error)s</div>
+    <br />
+    <div style="color:red">%(error)s</div>-->
     <input type="submit">
 
 </form>
 """
 
-error = "User name should not contain any spaces"
-"User passwords should match"
-"User did not enter a valid e-mail address. Try again."
+#error_name = "User name should be 3-10 characters and have no spaces or symbols"
+#error_password = "User passwords should match"
+#error_email = "User did not enter a valid e-mail address. Try again."
 
-class MainHandler(webapp2.RequestHandler):
-    def write_form(self, error=""):
-        self.response.write(form % {"error": error})
+#def escape_html(s):
+#    return cgi.escape(s, quote = True)
+
+
+class Index(webapp2.RequestHandler):
+    """ Handles requests coming in to '/' (the root of our site)
+    """
+
+#    def write_form(self, error=""):
+#        self.response.write(form % {"error": error})
 
 
     def get(self):
-        user_name = self.request.get('user_name')
-        user_email = self.request.get('user_email')
-        user_password = self.request.get('user_password') if password == password2
+#        user_name = self.request.get('user_name')
+#        user_email = self.request.get('user_email')
+#        user_password = self.request.get('user_password') if password == password2
 
 
-        self.response.write(form)
+        self.response.write(page_header + form + page_footer)
 
-    def post(self):
-        self.response.write
+#    def post(self):
+#        self.response.write()
 
+        #self.redirect(/success)
 
-class TestHandler(webapp2.RequestHandler):
+class SuccessfulRegistration(webapp2.RequestHandler):
     def get(self):
-        self.response.write(form)
-
-    def post(self):
-        self.response.write("Congratulation on a successful submission!")
+        self.response.write(page_header + "Congratulation on a successful submission!" + page_footer)
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler),
-    ('/success', TestHandler)
+    ('/', Index),
+    ('/success', SuccessfulRegistration)
 ], debug=True)
