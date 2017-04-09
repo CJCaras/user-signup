@@ -102,13 +102,16 @@ class SuccessfulRegistration(webapp2.RequestHandler):
         user_name = self.request.get('user_name')
         user_email = self.request.get('user_email')
         user_password = self.request.get('user_password')
+        password2 = self.request.get('password2')
 
-        #if len(user_name) < 3 or len(user_name) > 10:
-            #self.redirect("/?error=Your login name must be 3-10 characters in length. Please choose another.)
-        # TODO 2
-        # if the user typed nothing at all, redirect and yell at them
+        if len(user_name) < 5 or len(user_name) > 10:
+            self.redirect("/?error=Your login name must be 5-10 characters in length. Please choose another.")
+
         if user_name == '' or user_email == '' or user_password == '':
             self.redirect("/?error=One or more fields were left blank. Please complete the form before submission.")
+
+        if user_password != password2:
+            self.redirect("/?error=Your passwords do not match. Try again.")
 
         self.response.write(page_header + "Congratulation on a successful submission!" + page_footer)
 
