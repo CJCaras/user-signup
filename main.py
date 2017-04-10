@@ -43,41 +43,63 @@ page_footer = """
 """
 
 #Sign-in page form data
-form = """
+form_opener = """<table>
+<form action="/success" method="post">"""
 
-<form action="/success" method="post">
-    <label>Create a user name you would like to use with our site:
-    <br />
+name_form = """<tr>
+    <td>Create a user name you would like to use with our site:
+    </td>
+    <td>
     <input type="text" name="user_name" value="%(user_name)s">
-    </label>
-    <br />
-    <label>Enter your e-mail address for verification:
-    <br />
-    <input type="text" name="user_email" value="%(user_email)s">
-    </label>
-    <br />
-    <label>Password (5-10 characters without spaces):
-    <br />
-    <input type="password" name="user_password" value="">
-    </label>
-    <br />
-    <label>Re-type Password:
-    <br />
-    <input type="password" name="password2" value="">
-    </label>
-    <br />
-    <input type="submit">
-</form>
+    </td>
+    <td class="error">
+    """
+
+form_end = """</td></tr>"""
+
+email_form = """
+<tr><td>Enter your e-mail address for verification:</td>
+<td>
+<input type="text" name="user_email" value="%(user_email)s">
+</td>
+<td class="error">
 """
 
+password_form = """<tr>
+<td>Password (5-10 characters without spaces):</td>
+<td><input type="password" name="user_password" value="">
+</td>
+</tr>
+<td class="error">
+"""
 
+password2_form = """
+<tr><td>Re-type Password:</td>
+<td><input type="password" name="password2" value="">
+</td>
+<td class="error">
+"""
 
-#error_name = "User name should be 3-10 characters and have no spaces or symbols"
-#error_password = "User passwords should match"
-#error_email = "User did not enter a valid e-mail address. Try again."
+form_closer = """<tr><td></td><td><input type="submit" text-align="align-right"></td></td>
+</form></table>
+"""
 
-#def escape_html(s):
-#    return cgi.escape(s, quote = True)
+forms = form_opener + name_form + form_end + email_form + form_end + password_form + form_end + password2_form + form_end
+
+def valid_username(username):
+    USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+    return USER_RE.match(username)
+
+def valid_password(password):
+    USER_PW = re.compile(r"^.{3,20}$")
+    return USER_PW.match(password)
+
+def valid_email(email):
+    USER_EM = re.compile(r"^[\S]+@[\S]+.[\S]+$")
+    return USER_EM.match(email)
+
+def escape_html(s):
+    return cgi.escape(s, quote = True)
 
 
 class Index(webapp2.RequestHandler):
@@ -93,10 +115,18 @@ class Index(webapp2.RequestHandler):
         else:
             error_message = ''
 
+        name_error = self.request.get("name_error")
+        if name_error:
+            name_error_esc = cgi.escape(name_error, quote=True)
+            name_error_message = '<p class="error">' + name_error_esc + '</p>'
+        else:
+            name_error_message = ''
 
-        self.response.write(page_header + form + error_message + page_footer)
+        self.response.write(page_header + form_opener + name_form +
+        name_error_message + form_end + email_form + form_end + password_form + form_end + password2_form + form_end + error_message + form_closer + page_footer)
 
 class SuccessfulRegistration(webapp2.RequestHandler):
+
     def post(self):
 
         user_name = self.request.get('user_name')
@@ -104,8 +134,11 @@ class SuccessfulRegistration(webapp2.RequestHandler):
         user_password = self.request.get('user_password')
         password2 = self.request.get('password2')
 
-        if len(user_name) < 5 or len(user_name) > 10:
-            self.redirect("/?error=Your login name must be 5-10 characters in length. Please choose another.")
+        if len(user_name) < 3 or len(user_name) > 20:
+            self.redirect("/?name_error=User name must be 3-20 characters in length. Please choose another.")
+
+        #if valid_username(user_name):
+            #self.redirect("/?error=User name should not contain spaces or special characters.")
 
         if user_name == '' or user_email == '' or user_password == '':
             self.redirect("/?error=One or more fields were left blank. Please complete the form before submission.")
@@ -113,7 +146,7 @@ class SuccessfulRegistration(webapp2.RequestHandler):
         if user_password != password2:
             self.redirect("/?error=Your passwords do not match. Try again.")
 
-        self.response.write(page_header + "Congratulation on a successful submission!" + page_footer)
+        self.response.write(page_header + "Welcome " + user_name + "! Thank you for registering. Stay tuned for updates!" + page_footer)
 
 app = webapp2.WSGIApplication([
     ('/', Index),
