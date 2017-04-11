@@ -46,24 +46,27 @@ page_footer = """
 form_opener = """<table>
 <form action="/success" method="post">"""
 
+name = ''
+user_email = ''
+
 name_form = """<tr>
     <td>Create a user name you would like to use with our site:
     </td>
     <td>
-    <input type="text" name="user_name" value="%(user_name)s">
+    <input type="text" name="user_name" value="{0}">
     </td>
     <td class="error">
-    """
+    """.format(name)
 
 form_end = """</td></tr>"""
 
 email_form = """
-<tr><td>Enter your e-mail address for verification:</td>
+<tr><td>Enter a valid e-mail address (optional):</td>
 <td>
-<input type="text" name="user_email" value="%(user_email)s">
+<input type="text" name="user_email" value="{0}">
 </td>
 <td class="error">
-"""
+""".format(user_email)
 
 password_form = """<tr>
 <td>Password (5-10 characters without spaces):</td>
@@ -80,15 +83,10 @@ password2_form = """
 <td class="error">
 """
 
-form_closer = """<tr><td></td><td><input type="submit" text-align="align-right"></td></td>
+form_closer = """<tr><td></td>
+<td><input type="submit"></td>
 </form></table>
 """
-
-forms = form_opener + name_form + form_end + email_form + form_end + password_form + form_end + password2_form + form_end
-
-def valid_username(username):
-    USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-    return USER_RE.match(username)
 
 def valid_password(password):
     USER_PW = re.compile(r"^.{3,20}$")
@@ -101,7 +99,6 @@ def valid_email(email):
 def escape_html(s):
     return cgi.escape(s, quote = True)
 
-
 class Index(webapp2.RequestHandler):
     """ Handles requests coming in to '/' (the root of our site)
     """
@@ -110,41 +107,51 @@ class Index(webapp2.RequestHandler):
 
         error = self.request.get("error")
         if error:
-            error_esc = cgi.escape(error, quote=True)
-            error_message = '<p class="error">' + error_esc + '</p>'
+            error_message = '<p class="error">' + error + '</p>'
         else:
             error_message = ''
 
         name_error = self.request.get("name_error")
         if name_error:
-            name_error_esc = cgi.escape(name_error, quote=True)
-            name_error_message = '<p class="error">' + name_error_esc + '</p>'
+            name_error_message = '<p class="error">' + name_error + '</p>'
         else:
             name_error_message = ''
 
+        pass_error = self.request.get("pass_error")
+        if pass_error:
+            #name = self.request.get(cgi.escape('user_name'))
+            pass_error_message = '<p class="error">' + pass_error + '</p>'
+        else:
+            pass_error_message = ''
+
         self.response.write(page_header + form_opener + name_form +
-        name_error_message + form_end + email_form + form_end + password_form + form_end + password2_form + form_end + error_message + form_closer + page_footer)
+        name_error_message + form_end + email_form + error_message + form_end + password_form + form_end + password2_form + pass_error_message + form_end + form_closer + page_footer)
 
 class SuccessfulRegistration(webapp2.RequestHandler):
 
     def post(self):
 
-        user_name = self.request.get('user_name')
+        user_name = self.request.get(cgi.escape('user_name'))
         user_email = self.request.get('user_email')
         user_password = self.request.get('user_password')
         password2 = self.request.get('password2')
 
+        #name = user_name
+
         if len(user_name) < 3 or len(user_name) > 20:
             self.redirect("/?name_error=User name must be 3-20 characters in length. Please choose another.")
 
-        #if valid_username(user_name):
-            #self.redirect("/?error=User name should not contain spaces or special characters.")
+        if valid_email(user_email) != '' and user_email != '':
+            self.redirect("/?error=Please enter a valid e-mail address.")
 
-        if user_name == '' or user_email == '' or user_password == '':
+        #if valid_username(user_name) != '':
+            #self.redirect("/?name_error=User name should not contain spaces or special characters.")
+
+        if user_name == '' or user_password == '':
             self.redirect("/?error=One or more fields were left blank. Please complete the form before submission.")
 
         if user_password != password2:
-            self.redirect("/?error=Your passwords do not match. Try again.")
+            self.redirect("/?pass_error=Your passwords do not match. Try again.")
 
         self.response.write(page_header + "Welcome " + user_name + "! Thank you for registering. Stay tuned for updates!" + page_footer)
 
