@@ -141,8 +141,9 @@ class SuccessfulRegistration(webapp2.RequestHandler):
         if len(user_name) < 3 or len(user_name) > 20:
             self.redirect("/?name_error=User name must be 3-20 characters in length. Please choose another.")
 
-        if valid_email(user_email) != '' and user_email != '':
-            self.redirect("/?error=Please enter a valid e-mail address.")
+        if user_email:
+            if not valid_email(user_email):
+                self.redirect("/?error=Please enter a valid e-mail address.")
 
         #if valid_username(user_name) != '':
             #self.redirect("/?name_error=User name should not contain spaces or special characters.")
